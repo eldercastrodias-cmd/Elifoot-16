@@ -12,7 +12,7 @@ jobs:
       - name: Preparar projeto
         run: |
           mkdir -p src res inc
-          cp main.c src/main.c
+          mv main.c src/main.c
           [ -f res/resources.res ] || echo "" > res/resources.res
       - name: Compilar com SGDK
         run: |
