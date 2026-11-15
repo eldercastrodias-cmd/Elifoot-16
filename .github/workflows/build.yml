@@ -1,0 +1,33 @@
+name: Build ROM
+on:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar projeto
+        run: |
+          mkdir -p src res inc
+          cp main.c src/main.c
+          [ -f res/resources.res ] || echo "" > res/resources.res
+      - name: Compilar com SGDK
+        run: |
+          docker run --rm -u "$(id -u):$(id -g)" -v "$PWD":/src -w /src \
+            --entrypoint make ghcr.io/stephane-d/sgdk -f /sgdk/makefile.gen
+      - name: Copiar ROM
+        run: cp out/rom.bin Elifoot16.bin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Elifoot16-rom
+          path: Elifoot16.bin
+      - name: Salvar ROM no repositorio
+        run: |
+          git config user.name github-actions
+          git config user.email actions@github.com
+          git add -f Elifoot16.bin
+          git commit -m "ROM compilada" || exit 0
+          git push
